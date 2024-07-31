@@ -22,6 +22,11 @@ model User {
   profileImageURL String
   posts           Post[]
   comments        Comment[]
+  likes           Like[]
+  followers       Follow[] @relation("UserFollowers")
+  following       Follow[] @relation("UserFollowing")
+  accessTokens    AccessToken[]
+  refreshTokens   RefreshToken[]
 }
 
 model Post {
@@ -37,6 +42,7 @@ model Post {
   authorId     Int
   author       User      @relation(fields: [authorId], references: [id])
   comments     Comment[]
+  likes        Like[]
 }
 
 model Comment {
@@ -47,4 +53,50 @@ model Comment {
   postId   Int
   author   User   @relation(fields: [authorId], references: [id])
   post     Post   @relation(fields: [postId], references: [id])
+}
+
+model Like {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  postId   Int
+  user     User   @relation(fields: [userId], references: [id])
+  post     Post   @relation(fields: [postId], references: [id])
+}
+
+model Follow {
+  id             Int    @id @default(autoincrement())
+  followerId     Int
+  followingId    Int
+  follower       User   @relation("UserFollowers", fields: [followerId], references: [id])
+  following      User   @relation("UserFollowing", fields: [followingId], references: [id])
+}
+
+model Client {
+  id           Int       @id @default(autoincrement())
+  clientId     String    @unique
+  clientSecret String
+  redirectUris String[]
+  grants       String[]
+  accessTokens AccessToken[]
+  refreshTokens RefreshToken[]
+}
+
+model AccessToken {
+  id               Int      @id @default(autoincrement())
+  accessToken      String   @unique
+  accessTokenExpiresAt DateTime
+  clientId         Int
+  client           Client   @relation(fields: [clientId], references: [id])
+  userId           Int
+  user             User     @relation(fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id                Int      @id @default(autoincrement())
+  refreshToken      String   @unique
+  refreshTokenExpiresAt DateTime
+  clientId          Int
+  client            Client   @relation(fields: [clientId], references: [id])
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id])
 }
