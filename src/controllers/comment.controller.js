@@ -2,16 +2,16 @@ const { PrismaClient } = require("@prisma/client");
 const { comment } = new PrismaClient();
 
 async function addComment(req, res) {
-  const { content } = req.body;
-  const { postId } = parseInt(req.params.id);
+  const { contents, date } = req.body;
+  const postId = parseInt(req.params.id);
   const userId = req.user_id;
   try {
     const newComment = await comment.create({
       data: {
-        content: content,
-        date: new Date(),
-        author: userId,
-        post: postId,
+        content: contents,
+        date: date,
+        authorId: userId,
+        postId: postId,
       },
     });
     return res
