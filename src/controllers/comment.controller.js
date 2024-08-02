@@ -3,7 +3,7 @@ const { comment } = new PrismaClient();
 
 async function addComment(req, res) {
   const { content } = req.body;
-  const { postId } = req.params;
+  const { postId } = parseInt(req.params.id);
   const userId = req.user_id;
   try {
     const newComment = await comment.create({
