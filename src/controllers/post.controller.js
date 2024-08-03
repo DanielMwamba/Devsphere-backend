@@ -15,6 +15,18 @@ async function getAllPosts(req, res) {
         slug: true,
         imageURL: true,
         date: true,
+        comments: {
+          select: {
+            content: true,
+            author: {
+              select: {
+                userName: true,
+                profileImageURL: true,
+              },
+            },
+            date: true,
+          },
+        },
         author: {
           select: {
             name: true,
@@ -275,6 +287,18 @@ async function getPost(req, res) {
             profileImageURL: true,
           },
         },
+        comments: {
+          select: {
+            content: true,
+            author: {
+              select: {
+                userName: true,
+                profileImageURL: true,
+              },
+            },
+            date: true,
+          },
+        },
       },
     });
 
@@ -374,5 +398,5 @@ module.exports = {
   getPost,
   getUserPost,
   deletePost,
-  getPostsByCategory
+  getPostsByCategory,
 };
