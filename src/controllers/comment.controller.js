@@ -14,13 +14,11 @@ async function addComment(req, res) {
         postId: postId,
       },
     });
-    return res
-      .status(201)
-      .json({
-        status: 1,
-        msg: "Commentaire ajouté avec succès",
-        comment: newComment,
-      });
+    return res.status(201).json({
+      status: 1,
+      msg: "Commentaire ajouté avec succès",
+      comment: newComment,
+    });
   } catch (error) {
     return res
       .status(500)
@@ -28,7 +26,41 @@ async function addComment(req, res) {
   }
 }
 
+async function deleteComment(req, res) {
+  const commentId = parseInt(req.params.id);
+  const userId = req.user_id;
+
+  try {
+    const commentToDelete = await comment.findUnique({
+      where: {
+        id: commentId,
+      },
+      include: {
+        author: true,
+      },
+    });
+
+    if (!commentToDelete) {
+      return res.status(400).json({ msg: "Commentaire non trouvée" });
+    }
+
+    if (commentToDelete.author.id !== userId) {
+      return res.status(401).json({ msg: "Unauthorized" });
+    }
+
+    await comment.delete({
+      where: {
+        id: commentId,
+      },
+    });
+
+    return res.status(200).json({ msg: "Commentaire supprimée avec succès" });
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+}
 
 module.exports = {
-    addComment
+  addComment,
+  deleteComment,
 };
