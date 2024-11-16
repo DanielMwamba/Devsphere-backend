@@ -9,7 +9,7 @@ const commentRouter = require("./routes/comment.routes");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const corsOption = {
-  origin: "*",
+  origin: "https://kongodev.vercel.app",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
 };
 
