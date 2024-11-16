@@ -31,6 +31,7 @@ async function getAllPosts(req, res) {
           select: {
             name: true,
             userName: true,
+            profileImageURL: true,
           },
         },
       },
