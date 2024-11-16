@@ -37,7 +37,7 @@ async function getAllPosts(req, res) {
       },
     });
     if (posts.length === 0) {
-      return res.status(404).json({ posts: [] });
+      return res.status(200).json({ posts: [] });
     }
 
     return res.status(200).json({ posts });
