@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../utils/cloudinary");
 
 const { user } = new PrismaClient();
 
@@ -12,7 +13,12 @@ async function getUserByUsername(req, res) {
         userName: username,
       },
       include: {
-        posts: true,
+        posts: {
+          include: {
+            comments: true,
+            author: true,
+          },
+        },
       },
     });
     if (!users) {
@@ -45,12 +51,10 @@ async function register(req, res) {
     });
 
     if (existingUser) {
-      return res
-        .status(400)
-        .json({
-          status: 0,
-          msg: "L'email ou le nom d'utilisateur est déjà utilisé.",
-        });
+      return res.status(400).json({
+        status: 0,
+        msg: "L'email ou le nom d'utilisateur est déjà utilisé.",
+      });
     }
 
     // Hash du mot de passe
@@ -63,7 +67,8 @@ async function register(req, res) {
         email: email,
         userName: username,
         password: hashedPassword,
-        profileImageURL: "https://res.cloudinary.com/dqbduuqel/image/upload/v1715241630/profile-icon-design-free-vector_sghprc.jpg",
+        profileImageURL:
+          "https://res.cloudinary.com/dqbduuqel/image/upload/v1715241630/profile-icon-design-free-vector_sghprc.jpg",
       },
     });
 
@@ -81,13 +86,11 @@ async function register(req, res) {
       .status(201)
       .json({ status: 1, msg: "Enregistrement réussi.", token, refreshToken });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        status: 0,
-        msg: "Échec lors de l'enregistrement de l'utilisateur",
-        error: error.message,
-      });
+    return res.status(500).json({
+      status: 0,
+      msg: "Échec lors de l'enregistrement de l'utilisateur",
+      error: error.message,
+    });
   }
 }
 
@@ -141,6 +144,7 @@ async function User(req, res) {
         email: true,
         name: true,
         posts: true,
+        profileImageURL: true,
       },
     });
     if (!userData) {
@@ -171,13 +175,13 @@ async function getAllUsers(req, res) {
 async function updateUser(req, res) {
   try {
     const userId = parseInt(req.user_id);
-    const userData = req.body;
-    const { username } = req.body;
+    const { userName, email, name, bio, profileImageURL } = req.body;
+    const userData = { userName, email, bio, name, profileImageURL };
 
     // Validation du nom d'utilisateur
     const usernameExist = await user.findFirst({
       where: {
-        userName: username,
+        userName: userName,
         NOT: { id: userId },
       },
     });
@@ -196,13 +200,56 @@ async function updateUser(req, res) {
       return res.status(404).json({ error: "Utilisateur non trouvé" });
     }
 
+    return res.status(200).json({
+      status: 1,
+      msg: "Utilisateur mis à jour avec succès:",
+      updatedUser,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
     return res
-      .status(200)
-      .json({
-        status: 1,
-        msg: "Utilisateur mis à jour avec succès:",
-        updatedUser,
-      });
+      .status(500)
+      .json({ error: "Impossible de mettre à jour l'utilisateur" });
+  }
+}
+
+async function updateProfileImage(req, res) {
+  try {
+    const userId = req.user_id;
+    // const { imageURL } = req.body;
+
+    const users = await user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!users) {
+      return res.status(404).json({ msg: "Utilisateur non trouvé." });
+    }
+
+    const { public_id, secure_url } = await cloudinary.uploader.upload(
+      req.body.file.profileImage
+      // console.log(req.body.file.profileImage)
+    );
+    const cloudinaryId = public_id;
+    const imageURL = secure_url;
+
+    const updatedUser = await user.update({
+      where: { id: userId },
+      data: {
+        profileImageURL: imageURL,
+        // cloudinaryId: cloudinaryId,
+      },
+    });
+    if (!updatedUser) {
+      return res.status(404).json({ error: "Utilisateur non trouvé" });
+    }
+
+    return res.status(200).json({
+      status: 1,
+      msg: "Utilisateur mis à jour avec succès:",
+      updatedUser,
+    });
   } catch (error) {
     console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
     return res
@@ -253,6 +300,7 @@ module.exports = {
   User,
   getAllUsers,
   updateUser,
+  updateProfileImage,
   refreshToken,
   getUserByUsername,
 };

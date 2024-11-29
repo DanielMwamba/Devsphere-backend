@@ -13,22 +13,25 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
   "https://kongodev.vercel.app",
   "https://kongodev.netlify.app",
+  "http://localhost:5173",
 ];
 
 // Middleware CORS avec vérification dynamique
-app.use(cors({
-  origin: function (origin, callback) {
-    // Vérifier si l'origine de la requête est dans la liste des origines autorisées ou est undefined (cas des requêtes internes)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Vérifier si l'origine de la requête est dans la liste des origines autorisées ou est undefined (cas des requêtes internes)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 // Middleware pour les requêtes préliminaires (OPTIONS)
 app.options("*", cors());

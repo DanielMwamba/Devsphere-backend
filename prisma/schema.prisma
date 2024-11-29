@@ -18,6 +18,7 @@ model User {
   name            String
   userName        String    @unique
   email           String    @unique
+  bio             String    @default("")
   password        String
   profileImageURL String
   posts           Post[]
