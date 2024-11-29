@@ -60,7 +60,22 @@ async function getUserAllPosts(req, res) {
             id: true,
             name: true,
             userName: true,
+            profileImageURL: true,
           },
+        },
+        comments: {
+          select: {
+            id: true,
+            content: true,
+            author: {
+              select: {
+                id: true,
+                name: true,
+                userName: true,
+                profileImageURL: true,
+              },
+            },
+          }
         },
       },
       orderBy: {
