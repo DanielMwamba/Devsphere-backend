@@ -5,6 +5,8 @@ const cloudinary = require("../utils/cloudinary");
 
 const { user } = new PrismaClient();
 
+//Récupération des données de l'utilisateur par son username
+
 async function getUserByUsername(req, res) {
   try {
     const { username } = req.params;
@@ -38,6 +40,8 @@ async function getUserByUsername(req, res) {
       .json({ status: 0, msg: `Erreur du serveur : ${error.message}` });
   }
 }
+
+//Inscription d'un nouvel utilisateur
 
 async function register(req, res) {
   try {
@@ -94,6 +98,8 @@ async function register(req, res) {
   }
 }
 
+//Connexion d'un utilisateur
+
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -112,7 +118,7 @@ async function login(req, res) {
     // Vérification du mot de passe
     const passwordMatched = await bcrypt.compare(password, users.password);
     if (!passwordMatched) {
-      return res.status(401).json({ status: 0, msg: "Mot de passe incorrect" });
+      return res.status(401).json({ status: 0, msg: "L'email ou le mot de passe est incorrect" });
     }
 
     // Création et envoi du token d'authentification
@@ -132,6 +138,8 @@ async function login(req, res) {
     return res.status(500).json({ status: 0, msg: error.message });
   }
 }
+
+//Récupération des données de l'utilisateur
 
 async function User(req, res) {
   try {
@@ -163,6 +171,8 @@ async function User(req, res) {
   }
 }
 
+//Récupération de tous les utilisateurs
+
 async function getAllUsers(req, res) {
   try {
     const users = await user.findMany();
@@ -171,6 +181,8 @@ async function getAllUsers(req, res) {
     return res.status(500).json({ msg: error.message });
   }
 }
+
+//Mise à jour des données de l'utilisateur
 
 async function updateUser(req, res) {
   try {
@@ -213,6 +225,8 @@ async function updateUser(req, res) {
   }
 }
 
+//Mise à jour de l'image de profil de l'utilisateur
+
 async function updateProfileImage(req, res) {
   try {
     const userId = req.user_id;
@@ -248,7 +262,7 @@ async function updateProfileImage(req, res) {
     return res.status(200).json({
       status: 1,
       msg: "Utilisateur mis à jour avec succès:",
-      updatedUser,
+      // updatedUser,
     });
   } catch (error) {
     console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
@@ -257,6 +271,8 @@ async function updateProfileImage(req, res) {
       .json({ error: "Impossible de mettre à jour l'utilisateur" });
   }
 }
+
+//Rafraîchissement du jeton d'authentification
 
 async function refreshToken(req, res) {
   try {
@@ -294,6 +310,66 @@ async function refreshToken(req, res) {
   }
 }
 
+//Renitialisation du mot de passe de l'utilisateur
+
+async function  resetPassword(req, res) {
+  try {
+    const userId = req.user_id;
+    const { currentPassword, newPassword } = req.body;
+
+    // Validation des entrées
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({
+          msg: "Les champs mot de passe actuel et nouveau sont obligatoires",
+        });
+    }
+
+    // Recherche de l'utilisateur
+    const userRecord = await user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!userRecord) {
+      return res
+        .status(401)
+        .json({ msg: "Échec de la réinitialisation du mot de passe" });
+    }
+
+    // Vérification du mot de passe actuel
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      userRecord.password
+    );
+
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ msg: "Échec de la réinitialisation du mot de passe" });
+    }
+
+    // Hachage du nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Mise à jour du mot de passe
+    await user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    // Réponse réussie
+    return res
+      .status(200)
+      .json({ msg: "Mot de passe réinitialisé avec succès" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ msg: "Une erreur s'est produite. Veuillez réessayer." });
+  }
+}
+
 module.exports = {
   login,
   register,
@@ -303,4 +379,5 @@ module.exports = {
   updateProfileImage,
   refreshToken,
   getUserByUsername,
+  resetPassword
 };

@@ -19,6 +19,7 @@ userRouter.post("/refreshToken", userController.refreshToken);
 userRouter.get("/", verifyToken, userController.User);
 userRouter.get("/all", verifyToken, userController.getAllUsers);
 userRouter.put("/", verifyToken, userController.updateUser);
+userRouter.put("/password", verifyToken, userController.resetPassword);
 userRouter.put("/profileImage", verifyToken, userController.updateProfileImage);
 
 module.exports = userRouter;
