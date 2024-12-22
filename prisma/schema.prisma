@@ -62,6 +62,8 @@ model Like {
   postId   Int
   user     User   @relation(fields: [userId], references: [id])
   post     Post   @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
 }
 
 model Follow {

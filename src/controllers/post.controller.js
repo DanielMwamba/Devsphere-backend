@@ -1,7 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const { cloudinary, slugifyUpdate, slugify } = require("../utils/utils");
 
-const { user, post } = new PrismaClient();
+const { user, post, like } = new PrismaClient();
 
 async function getAllPosts(req, res) {
   try {
@@ -26,6 +26,7 @@ async function getAllPosts(req, res) {
             date: true,
           },
         },
+        likes: true,
         author: {
           select: {
             name: true,
@@ -74,8 +75,9 @@ async function getUserAllPosts(req, res) {
                 profileImageURL: true,
               },
             },
-          }
+          },
         },
+        likes: true,
       },
       orderBy: {
         id: "desc",
@@ -270,6 +272,8 @@ async function getUserPost(req, res) {
       },
       include: {
         author: true,
+        likes: true,
+        comments: true,
       },
     });
 
@@ -405,6 +409,53 @@ async function getPostsByCategory(req, res) {
   }
 }
 
+async function likePost(req, res) {
+  const postId = parseInt(req.params.id);
+  const userId = req.user_id; // Utilisateur connecté
+
+  try {
+    // Vérifie si le post existe
+    const postExists = await post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!postExists) {
+      return res.status(404).json({ msg: "Post non trouvé" });
+    }
+
+    // Vérifie si l'utilisateur a déjà liké ce post
+    const existingLike = await like.findFirst({
+      where: {
+        userId: userId,
+        postId: postId,
+      },
+    });
+
+    if (existingLike) {
+      // Si le like existe déjà, le supprimer (unlike)
+      await like.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+      return res.status(200).json({ msg: "Like supprimé avec succès" });
+    }
+
+    // Sinon, ajouter un nouveau like
+    await like.create({
+      data: {
+        userId: userId,
+        postId: postId,
+      },
+    });
+
+    return res.status(201).json({ msg: "Post liké avec succès" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Erreur interne du serveur" });
+  }
+}
+
 module.exports = {
   addPost,
   getUserAllPosts,
@@ -414,4 +465,5 @@ module.exports = {
   getUserPost,
   deletePost,
   getPostsByCategory,
+  likePost,
 };
