@@ -1,6 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
-const cloudinary = require("../utils/cloudinary");
-const { slugifyUpdate, slugify } = require("../utils/slugify");
+const { cloudinary, slugifyUpdate, slugify } = require("../utils/utils");
 
 const { user, post } = new PrismaClient();
 
