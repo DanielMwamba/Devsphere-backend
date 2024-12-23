@@ -316,9 +316,12 @@ async function getPost(req, res) {
                 profileImageURL: true,
               },
             },
+            
             date: true,
           },
+          
         },
+        likes: true,
       },
     });
 
