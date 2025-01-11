@@ -81,7 +81,7 @@ model Client {
   redirectUris String[]
   grants       String[]
   accessTokens AccessToken[]
-  refreshTokens RefreshToken[]
+  refreshTokens RefreshToken[] 
 }
 
 model AccessToken {

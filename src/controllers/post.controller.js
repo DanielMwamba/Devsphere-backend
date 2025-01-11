@@ -316,10 +316,9 @@ async function getPost(req, res) {
                 profileImageURL: true,
               },
             },
-            
+
             date: true,
           },
-          
         },
         likes: true,
       },
@@ -385,6 +384,7 @@ async function getPostsByCategory(req, res) {
       select: {
         id: true,
         title: true,
+        description:true,
         category: true,
         summary: true,
         slug: true,
@@ -394,8 +394,23 @@ async function getPostsByCategory(req, res) {
           select: {
             name: true,
             userName: true,
+            profileImageURL: true,
           },
         },
+        comments: {
+          select: {
+            content: true,
+            author: {
+              select: {
+                userName: true,
+                profileImageURL: true,
+              },
+            },
+
+            date: true,
+          },
+        },
+        likes: true,
       },
     });
 
