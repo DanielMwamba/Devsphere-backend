@@ -153,6 +153,7 @@ async function User(req, res) {
         name: true,
         posts: true,
         profileImageURL: true,
+        bio: true,
         likes: true,
         followers: true,
         following: true,
