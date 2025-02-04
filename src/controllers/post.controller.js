@@ -361,6 +361,7 @@ async function deletePost(req, res) {
       return res.status(401).json({ msg: "Unauthorized" });
     }
 
+
     await post.delete({
       where: {
         id: id,

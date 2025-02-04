@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 // Liste des origines autorisées
 const allowedOrigins = [
-  "https://kongodev.vercel.app",
+  "https://devsphere.vercel.app",
   "https://kongodev.netlify.app",
   "http://localhost:5173",
 ];
